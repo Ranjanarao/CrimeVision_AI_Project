@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CrimeVision AI</title>
+
+<style>
+:root{--bg:#0b1020;--panel:#131b30;--line:#26324d;--muted:#9eabc4;--text:#eef3ff;--cyan:#50d8e8;--purple:#a78bfa}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 80% 0%,#1c2b50 0,#0b1020 42%);font-family:Arial,sans-serif;color:var(--text)}
+.wrap{max-width:1150px;margin:auto;padding:30px 20px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:30px}
+.brand{display:flex;gap:12px;align-items:center}
+.logo{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,var(--cyan),var(--purple));display:grid;place-items:center;color:#07101e;font-size:24px;font-weight:900}
+h1{font-size:23px;margin:0}
+.sub{color:var(--muted);font-size:13px;margin-top:5px}
+.pill{border:1px solid #31546a;color:#8cecf2;border-radius:30px;padding:8px 12px;font-size:12px}
+.hero{padding:30px;border:1px solid var(--line);border-radius:22px;background:linear-gradient(120deg,#172743,#151b32);margin-bottom:22px}
+.hero h2{font-size:29px;margin:0 0 10px}
+.hero p{color:#b8c5dc;max-width:700px;line-height:1.6;margin:0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:20px 0}
+.stat,.panel{background:rgba(19,27,48,.92);border:1px solid var(--line);border-radius:18px;padding:20px}
+.stat small{color:var(--muted)}
+.stat strong{display:block;font-size:26px;margin-top:8px}
+.grid{display:grid;grid-template-columns:1fr 1.3fr;gap:18px}
+.panel h3{margin:0 0 15px;font-size:17px}
+.drop{border:1px dashed #52698d;border-radius:15px;padding:22px;text-align:center;background:#10192c}
+.drop input{width:100%;margin:15px 0;color:var(--muted)}
+button{background:linear-gradient(90deg,#4dd8e8,#8d9dfb);border:0;border-radius:10px;padding:12px 18px;font-weight:800;color:#091322;cursor:pointer;width:100%}
+.hint{font-size:12px;color:var(--muted);line-height:1.5;margin-top:12px}
+.flash{padding:11px 14px;border:1px solid #376a70;background:#102e37;border-radius:10px;margin:12px 0;color:#a6f3eb}
+.item{padding:15px 0;border-bottom:1px solid var(--line)}
+.item:last-child{border:0}
+.itemhead{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.filename{font-weight:700;overflow-wrap:anywhere}
+.tag{font-size:11px;color:#8cecf2;background:#12313e;padding:5px 8px;border-radius:20px}
+.meta{font-size:12px;color:var(--muted);margin:8px 0}
+.detail{font-size:13px;line-height:1.6;color:#d1d9e8}
+.hash{font:11px monospace;color:#8d9bb5;overflow-wrap:anywhere;margin-top:8px}
+.frames{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.frames img{width:90px;height:58px;object-fit:cover;border-radius:7px;border:1px solid var(--line)}
+footer{text-align:center;color:#73819d;font-size:11px;margin:24px 0 4px}
+@media(max-width:760px){.grid,.stats{grid-template-columns:1fr}.hero h2{font-size:23px}.top{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+<header class="top">
+<div class="brand">
+<div class="logo">CV</div>
+<div>
+<h1>CrimeVision AI</h1>
+<div class="sub">MULTIMODAL FORENSIC ANALYSIS WORKSPACE</div>
+</div>
+</div>
+<div class="pill">● SYSTEM ONLINE · DEMO</div>
+</header>
+
+<section class="hero">
+<h2>Digital Evidence. One Workspace.</h2>
+<p>Upload image, video or audio evidence, review technical metadata, extract sample video frames and organize investigation records in one dashboard.</p>
+</section>
+
+{% with messages = get_flashed_messages() %}
+{% for message in messages %}
+<div class="flash">{{ message }}</div>
+{% endfor %}
+{% endwith %}
+
+<section class="stats">
+<div class="stat">
+<small>Total evidence files</small>
+<strong>{{ total }}</strong>
+</div>
+<div class="stat">
+<small>Supported media types</small>
+<strong>3</strong>
+</div>
+<div class="stat">
+<small>Integrity fingerprint</small>
+<strong>SHA-256</strong>
+</div>
+</section>
+
+<section class="grid">
+
+<div class="panel">
+<h3>＋ Add Evidence</h3>
+<form action="/upload" method="post" enctype="multipart/form-data">
+<div class="drop">
+<div style="font-size:30px">⬆</div>
+<b>Select evidence file</b>
+<div class="sub">Images · Videos · Audio</div>
+<input type="file" name="evidence" accept=".png,.jpg,.jpeg,.webp,.mp4,.mov,.avi,.wav,.mp3,.m4a" required>
+<button type="submit">Upload & Analyse</button>
+</div>
+</form>
+<p class="hint">Maximum upload: 100 MB. Supported: JPG, PNG, WEBP, MP4, MOV, AVI, WAV, MP3, M4A.</p>
+<p class="hint">Audio transcription requires GROQ_API_KEY. This demo performs technical metadata analysis and object detection; it does not determine guilt or identify people.</p>
+</div>
+
+<div class="panel">
+<h3>Evidence Register</h3>
+
+{% if records %}
+{% for r in records %}
+
+<div class="item">
+
+<div class="itemhead">
+<span class="filename">{{ r.filename }}</span>
+<span class="tag">{{ r.analysis.type }}</span>
+</div>
+
+<div class="meta">{{ r.uploaded_at }}</div>
+
+<div class="detail">{{ r.analysis.details }}</div>
+
+<!-- AI Object Detection Results -->
+{% if r.analysis.detections is defined %}
+<div class="detail" style="margin-top:10px">
+<b>AI Object Detection Results:</b>
+
+{% if r.analysis.detections %}
+{% for obj in r.analysis.detections %}
+<p>{{ obj.name }} - {{ obj.confidence }}% Confidence</p>
+{% endfor %}
+{% else %}
+<p>No objects detected.</p>
+{% endif %}
+</div>
+{% endif %}
+
+{% if r.analysis.annotated_image %}
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;margin-top:15px;">
+
+ <div>
+    <b>Original Uploaded Image</b>
+    <img
+        src="/uploads/{{ r.stored_name }}"
+        alt="Original Evidence"
+        style="width:100%;border-radius:12px;margin-top:10px;"
+    >
+</div>
+
+<div>
+    <b>AI Detection Result</b>
+    <img
+        src="/uploads/{{ r.analysis.annotated_image }}"
+        alt="AI Detection Result"
+        style="width:100%;border-radius:12px;margin-top:10px;"
+    >
+</div>
+
+</div>
+{% endif %}
+
+{% if r.analysis.transcript %}
+<div class="detail" style="margin-top:8px">
+<b>Transcript:</b> {{ r.analysis.transcript }}
+</div>
+{% endif %}
+
+{% if r.analysis.frames %}
+<div class="frames">
+{% for frame in r.analysis.frames %}
+<a href="/uploads/{{ frame }}" target="_blank">
+<img src="/uploads/{{ frame }}" alt="Extracted video frame">
+</a>
+{% endfor %}
+</div>
+{% endif %}
+
+<div class="hash">SHA-256: {{ r.sha256 }}</div>
+
+</div>
+
+{% endfor %}
+{% else %}
+<p class="sub">No evidence uploaded yet. Add a file to create your first investigation record.</p>
+{% endif %}
+
+</div>
+</section>
+
+<footer>
+CrimeVision AI · Academic prototype · Preserve original evidence and use copies for testing.
+</footer>
+
+</div>
+</body>
+</html>
